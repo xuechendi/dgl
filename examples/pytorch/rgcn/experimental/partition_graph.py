@@ -74,6 +74,7 @@ if __name__ == '__main__':
     argparser.add_argument('--output', type=str, default='data',
                            help='Output path of partitioned graph.')
     args = argparser.parse_args()
+    
 
     start = time.time()
     g = load_ogb(args.dataset)
@@ -94,3 +95,5 @@ if __name__ == '__main__':
                                     balance_ntypes=balance_ntypes,
                                     balance_edges=args.balance_edges,
                                     num_trainers_per_machine=args.num_trainers_per_machine)
+    end = time.time()
+    print(f"dgl.distributed.partition_graph completed, took {end - start}")

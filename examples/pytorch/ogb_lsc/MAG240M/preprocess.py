@@ -6,6 +6,7 @@ import ogb
 import torch
 import tqdm
 from ogb.lsc import MAG240MDataset
+from timeit import default_timer as timer
 
 import dgl
 import dgl.function as fn
@@ -48,6 +49,7 @@ args = parser.parse_args()
 
 print("Building graph")
 dataset = MAG240MDataset(root=args.rootdir)
+t1 = timer()
 ei_writes = dataset.edge_index("author", "writes", "paper")
 ei_cites = dataset.edge_index("paper", "paper")
 ei_affiliated = dataset.edge_index("author", "institution")
@@ -119,9 +121,15 @@ with tqdm.trange(0, dataset.num_paper_features, BLOCK_COLS) as tq:
         del g.nodes["institution"].data["x"]
 author_feat.flush()
 inst_feat.flush()
+g = g.formats(args.graph_format)
+dgl.save_graphs(f"args.graph_output_path.homo", g)
+t2 = timer()
+print(f"Complete generate inst_feat and author feat and homo graph, took {t2-t1} secs")
+
 
 # Convert to homogeneous if needed.  (The RGAT baseline needs homogeneous graph)
 if args.graph_as_homogeneous:
+    t3 = timer()
     # Process graph
     g = dgl.to_homogeneous(g)
     # DGL ensures that nodes with the same type are put together with the order preserved.
@@ -181,3 +189,6 @@ if args.graph_as_homogeneous:
 # Convert the graph to the given format and save.  (The RGAT baseline needs CSC graph)
 g = g.formats(args.graph_format)
 dgl.save_graphs(args.graph_output_path, g)
+full_feat.flush()
+t4 = timer()
+print(f"Complete generate full_feat and hetero graph, took {t4-t3} secs")

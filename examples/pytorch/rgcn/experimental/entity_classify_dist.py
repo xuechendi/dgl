@@ -454,6 +454,7 @@ def run(args, device, data):
 
     # training loop
     print("start training...")
+    print(f"n_epochs is {args.n_epochs}")
     for epoch in range(args.n_epochs):
         tic = time.time()
 
